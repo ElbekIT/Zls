@@ -16,63 +16,80 @@
         color: #f8fafc; /* slate-50 */
         overflow-x: hidden;
         user-select: none;
+        -webkit-user-select: none;
       }
       .glass {
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
       }
       .cyber-gradient {
-        background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e1b4b 100%);
+        background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
       }
       #security-overlay {
         display: none;
         position: fixed;
         inset: 0;
-        z-index: 9999;
-        background: rgba(0,0,0,0.95);
-        backdrop-filter: blur(20px);
+        z-index: 10000;
+        background: rgba(0,0,0,0.98);
+        backdrop-filter: blur(40px);
         align-items: center;
         justify-content: center;
         text-align: center;
         color: #ef4444;
       }
+      .neon-glow {
+        box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+      }
+      /* Custom scrollbar */
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: #020617; }
+      ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
     </style>
     <script>
-      // Anti-Inspect Security
-      document.addEventListener('contextmenu', e => e.preventDefault());
+      // Ultra-Strict Anti-Inspect Security
+      const blockAction = (e) => {
+        e.preventDefault();
+        const overlay = document.getElementById('security-overlay');
+        if (overlay) overlay.style.display = 'flex';
+        return false;
+      };
+
+      document.addEventListener('contextmenu', blockAction);
       document.onkeydown = function(e) {
         if (e.keyCode == 123 || 
             (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || 
-            (e.ctrlKey && e.keyCode == 85)) {
-          const overlay = document.getElementById('security-overlay');
-          if (overlay) overlay.style.display = 'flex';
-          return false;
+            (e.ctrlKey && e.keyCode == 85) ||
+            (e.ctrlKey && e.keyCode == 83)) {
+          return blockAction(e);
         }
       };
     </script>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "firebase/": "https://esm.sh/firebase@^12.7.0/",
-    "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@^19.2.3",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+        "firebase/": "https://esm.sh/firebase@^12.7.0/",
+        "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0"
+      }
+    }
+    </script>
+  <link rel="stylesheet" href="/index.css">
 </head>
   <body>
     <div id="root"></div>
-    <div id="security-overlay">
-      <div class="p-8">
-        <h1 class="text-6xl font-black mb-4 uppercase italic tracking-tighter">System Violation</h1>
-        <p class="text-2xl font-bold mb-8">Unauthorized access to system source detected.</p>
-        <p class="text-slate-500">Iltimos, sayt tizimiga aralashmang. Xavfsizlik choralari faol.</p>
-        <button onclick="location.reload()" class="mt-8 px-8 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-500">RELOAD SYSTEM</button>
+    <div id="security-overlay" onclick="location.reload()">
+      <div class="p-8 max-w-lg">
+        <div class="mb-6 inline-flex p-4 rounded-full bg-red-500/20 text-red-500">
+           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="m16 14-4-4"/><path d="m8 10 4 4"/><path d="m12 10-4 4"/><path d="m21 15-9-9-9 9"/><path d="m21 9-9-9-9 9"/></svg>
+        </div>
+        <h1 class="text-5xl font-black mb-4 uppercase italic tracking-tighter">URINMANG ILTIMOS</h1>
+        <p class="text-xl font-bold mb-4">Security violation detected. Access terminated.</p>
+        <p class="text-slate-500 text-sm">Sayt kodini ko'rish yoki o'zgartirish qat'iyan man etiladi. Xavfsizlik choralari 100% faol holatda.</p>
+        <div class="mt-10 font-mono text-xs text-red-500/50 animate-pulse">SYSTEM_LOCKED_OVERLAY_ACTIVE_V2.5</div>
       </div>
     </div>
   <script type="module" src="/index.tsx"></script>

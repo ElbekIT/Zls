@@ -29,6 +29,7 @@ export interface UserData {
   vipUntil: number | null;
   keysCreated: number;
   invitedBy?: string;
+  trialUsed?: boolean;
 }
 
 export interface InviteCode {

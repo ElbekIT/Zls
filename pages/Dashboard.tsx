@@ -9,13 +9,11 @@ import { GenerateKeyModal } from '../components/GenerateKeyModal';
 import { 
   Plus, 
   Key as KeyIcon, 
-  Users, 
   Activity, 
-  TrendingUp,
-  Sparkles,
   Zap,
   Lock,
-  Crown
+  Crown,
+  Clock
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -45,66 +43,94 @@ const Dashboard: React.FC<DashboardProps> = ({ user, userData }) => {
 
   useEffect(() => { fetchKeys(); }, [fetchKeys]);
 
-  const canCreateKey = userData?.isVIP || keys.length === 0;
+  // Normal user: only 1 key total, max 1 hour.
+  const canCreateKey = userData?.isAdmin || userData?.isVIP || (!userData?.trialUsed && keys.length === 0);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="relative overflow-hidden glass rounded-3xl p-8 md:p-10 border border-slate-800 shadow-2xl">
-        <div className="absolute top-0 right-0 p-8 opacity-5">
-          <Zap className="w-32 h-32 text-cyan-400" />
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      <div className="relative overflow-hidden glass rounded-[2.5rem] p-10 md:p-12 border border-slate-800 shadow-2xl">
+        <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
+          <Zap className="w-64 h-64 text-cyan-400" />
         </div>
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center space-x-6">
+        
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+          <div className="flex items-center space-x-8">
             <div className="relative">
-              <img src={`https://ui-avatars.com/api/?name=${userData?.username}&background=0E7490&color=fff`} className="w-20 h-20 rounded-2xl border-2 border-cyan-500/50 shadow-lg" alt="Pfp" />
-              {userData?.isVIP && (
-                <div className="absolute -top-2 -right-2 bg-yellow-500 p-1.5 rounded-lg shadow-lg">
-                  <Crown className="w-4 h-4 text-black" />
+              <div className="absolute inset-0 bg-cyan-500 blur-2xl opacity-20 rounded-full"></div>
+              <img 
+                src={`https://ui-avatars.com/api/?name=${userData?.username}&background=0E7490&color=fff&bold=true&size=128`} 
+                className="w-24 h-24 rounded-3xl border-2 border-cyan-500/40 shadow-2xl relative z-10" 
+                alt="Profile" 
+              />
+              {(userData?.isVIP || userData?.isAdmin) && (
+                <div className="absolute -top-3 -right-3 bg-gradient-to-br from-yellow-400 to-orange-600 p-2 rounded-xl shadow-xl z-20">
+                  <Crown className="w-5 h-5 text-white" />
                 </div>
               )}
             </div>
-            <div>
-              <h1 className="text-3xl font-black text-white italic tracking-tighter uppercase">
-                {userData?.username} <span className="text-slate-600 font-normal">/ Dashboard</span>
+            
+            <div className="space-y-3">
+              <h1 className="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">
+                {userData?.username}
               </h1>
-              <div className="flex items-center space-x-3 mt-1">
-                <span className={`px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${userData?.isVIP ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>
+              <div className="flex flex-wrap gap-2">
+                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${userData?.isVIP ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.1)]' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>
                   {userData?.isVIP ? 'VIP ACCESS ACTIVE' : 'STANDARD TRIAL'}
                 </span>
                 {userData?.isAdmin && (
-                  <Link to="/admin" className="px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20 transition-all">
+                  <Link to="/admin" className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
                     System Admin
                   </Link>
                 )}
               </div>
             </div>
           </div>
-          <button 
-            onClick={() => canCreateKey ? setIsModalOpen(true) : alert("VIP access required for more keys.")}
-            className={`group relative inline-flex items-center justify-center px-10 py-4 font-black text-white transition-all duration-300 rounded-xl overflow-hidden shadow-2xl uppercase tracking-widest italic text-sm ${canCreateKey ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-slate-800 grayscale cursor-not-allowed'}`}
-          >
-             {canCreateKey ? <Plus className="w-5 h-5 mr-2" /> : <Lock className="w-5 h-5 mr-2" />}
-             {userData?.isVIP ? 'Generate Key' : (keys.length > 0 ? 'LOCKED' : 'Generate Trial')}
-          </button>
+
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+             {!canCreateKey && (
+               <div className="text-right flex flex-col items-end mr-4">
+                 <span className="text-red-400 font-black text-xs uppercase tracking-widest italic">Trial Limit Reached</span>
+                 <span className="text-slate-600 text-[10px] font-bold uppercase">Contact Admin for VIP</span>
+               </div>
+             )}
+             <button 
+                onClick={() => canCreateKey ? setIsModalOpen(true) : null}
+                disabled={!canCreateKey}
+                className={`group relative inline-flex items-center justify-center px-10 py-5 font-black text-white transition-all duration-300 rounded-[1.2rem] overflow-hidden shadow-2xl uppercase tracking-widest italic text-sm border ${canCreateKey ? 'bg-cyan-600 hover:bg-cyan-500 border-cyan-400/30 hover:shadow-cyan-500/20 active:scale-95' : 'bg-slate-900 border-slate-800 text-slate-700 cursor-not-allowed grayscale'}`}
+              >
+                 {canCreateKey ? <Plus className="w-5 h-5 mr-3" /> : <Lock className="w-5 h-5 mr-3" />}
+                 {userData?.isVIP || userData?.isAdmin ? 'Generate VIP Key' : (keys.length > 0 ? 'TRIAL USED' : 'Generate Trial')}
+              </button>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass rounded-2xl p-6 border border-slate-800">
-           <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Total Licenses</p>
-           <h3 className="text-3xl font-black mt-2 text-white">{keys.length}</h3>
-        </div>
-        <div className="glass rounded-2xl p-6 border border-slate-800">
-           <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Active Status</p>
-           <h3 className="text-3xl font-black mt-2 text-cyan-400">{keys.filter(k => k.isActive).length} <span className="text-xs text-slate-600 font-bold">READY</span></h3>
-        </div>
-        <div className="glass rounded-2xl p-6 border border-slate-800">
-           <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">System Efficiency</p>
-           <h3 className="text-3xl font-black mt-2 text-purple-500">99.9% <span className="text-xs text-slate-600 font-bold">STABLE</span></h3>
-        </div>
+        {[
+          { label: 'Registered Keys', value: keys.length, icon: KeyIcon, color: 'text-blue-500' },
+          { label: 'Active Licenses', value: keys.filter(k => k.isActive).length, icon: Activity, color: 'text-cyan-500' },
+          { label: 'Session Time', value: userData?.isVIP ? 'UNLIMITED' : '1 HR TRIAL', icon: Clock, color: 'text-purple-500' }
+        ].map((stat, i) => (
+          <div key={i} className="glass rounded-3xl p-8 border border-slate-800/50 group hover:border-slate-700 transition-all">
+            <div className="flex items-center justify-between mb-6">
+               <div className={`p-3 rounded-2xl bg-slate-950 border border-slate-800 ${stat.color}`}>
+                  <stat.icon className="w-6 h-6" />
+               </div>
+               <div className="w-1.5 h-1.5 rounded-full bg-slate-800 group-hover:bg-cyan-500 transition-colors"></div>
+            </div>
+            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">{stat.label}</p>
+            <h3 className="text-4xl font-black mt-2 text-slate-100 tracking-tighter italic">{stat.value}</h3>
+          </div>
+        ))}
       </div>
 
-      <KeyTable keys={keys} onRefresh={fetchKeys} />
+      <div className="space-y-6">
+        <div className="flex items-center space-x-3">
+          <div className="w-1.5 h-8 bg-cyan-600 rounded-full shadow-[0_0_10px_rgba(8,145,178,0.5)]"></div>
+          <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">Database Management</h2>
+        </div>
+        <KeyTable keys={keys} onRefresh={fetchKeys} />
+      </div>
 
       {isModalOpen && (
         <GenerateKeyModal 
