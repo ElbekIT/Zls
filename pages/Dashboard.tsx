@@ -43,7 +43,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, userData }) => {
 
   useEffect(() => { fetchKeys(); }, [fetchKeys]);
 
-  // Normal user: only 1 key total, max 1 hour.
+  // Real-time active key count (not just isActive, but not expired)
+  const activeKeysCount = keys.filter(k => k.isActive && (!k.expiresAt || Date.now() < k.expiresAt)).length;
+
+  // Normal user logic: 1 key only, max 1 hour.
   const canCreateKey = userData?.isAdmin || userData?.isVIP || (!userData?.trialUsed && keys.length === 0);
 
   return (
@@ -89,8 +92,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, userData }) => {
           <div className="flex flex-col sm:flex-row items-center gap-4">
              {!canCreateKey && (
                <div className="text-right flex flex-col items-end mr-4">
-                 <span className="text-red-400 font-black text-xs uppercase tracking-widest italic">Trial Limit Reached</span>
-                 <span className="text-slate-600 text-[10px] font-bold uppercase">Contact Admin for VIP</span>
+                 <span className="text-red-400 font-black text-xs uppercase tracking-widest italic">Limitga yetildi</span>
+                 <span className="text-slate-600 text-[10px] font-bold uppercase">VIP uchun admin bilan bog'laning</span>
                </div>
              )}
              <button 
@@ -99,7 +102,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, userData }) => {
                 className={`group relative inline-flex items-center justify-center px-10 py-5 font-black text-white transition-all duration-300 rounded-[1.2rem] overflow-hidden shadow-2xl uppercase tracking-widest italic text-sm border ${canCreateKey ? 'bg-cyan-600 hover:bg-cyan-500 border-cyan-400/30 hover:shadow-cyan-500/20 active:scale-95' : 'bg-slate-900 border-slate-800 text-slate-700 cursor-not-allowed grayscale'}`}
               >
                  {canCreateKey ? <Plus className="w-5 h-5 mr-3" /> : <Lock className="w-5 h-5 mr-3" />}
-                 {userData?.isVIP || userData?.isAdmin ? 'Generate VIP Key' : (keys.length > 0 ? 'TRIAL USED' : 'Generate Trial')}
+                 {userData?.isVIP || userData?.isAdmin ? 'Generate VIP Key' : (keys.length > 0 ? 'TRIAL ISHLATILGAN' : 'Generate Trial')}
               </button>
           </div>
         </div>
@@ -107,9 +110,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, userData }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: 'Registered Keys', value: keys.length, icon: KeyIcon, color: 'text-blue-500' },
-          { label: 'Active Licenses', value: keys.filter(k => k.isActive).length, icon: Activity, color: 'text-cyan-500' },
-          { label: 'Session Time', value: userData?.isVIP ? 'UNLIMITED' : '1 HR TRIAL', icon: Clock, color: 'text-purple-500' }
+          { label: 'Jami Keylar', value: keys.length, icon: KeyIcon, color: 'text-blue-500' },
+          { label: 'Faol Litsenziyalar', value: activeKeysCount, icon: Activity, color: 'text-cyan-500' },
+          { label: 'Sizning Vaqtingiz', value: userData?.isVIP ? 'CHEKSIZ VIP' : '1 SOAT TRIAL', icon: Clock, color: 'text-purple-500' }
         ].map((stat, i) => (
           <div key={i} className="glass rounded-3xl p-8 border border-slate-800/50 group hover:border-slate-700 transition-all">
             <div className="flex items-center justify-between mb-6">

@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc, setDoc, query, orderBy, where, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { UserData, InviteCode } from '../types';
-// Added User as UserIcon to fix the 'Cannot find name UserIcon' error
 import { Users, User as UserIcon, Key, ShieldCheck, Search, Clock, Smartphone, Plus, Trash2, ShieldAlert } from 'lucide-react';
 
 const Admin: React.FC<{ user: any }> = () => {
@@ -60,7 +59,7 @@ const Admin: React.FC<{ user: any }> = () => {
           <h1 className="text-4xl font-black uppercase italic text-white leading-none tracking-tighter">
             System Admin <span className="text-cyan-500">Pulse</span>
           </h1>
-          <p className="text-slate-500 text-xs font-bold mt-2 uppercase tracking-widest">Global VIP License Control</p>
+          <p className="text-slate-500 text-xs font-bold mt-2 uppercase tracking-widest opacity-60">Global VIP License Control</p>
         </div>
         
         <div className="relative group">
@@ -85,7 +84,7 @@ const Admin: React.FC<{ user: any }> = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-950/80 border-b border-slate-800 text-[10px] uppercase font-black text-slate-500 tracking-widest">
+                  <tr className="bg-slate-950 border-b border-slate-800 text-[10px] uppercase font-black text-slate-500 tracking-[0.2em]">
                     <th className="p-6">Agent Name</th>
                     <th className="p-6">Status</th>
                     <th className="p-6">Expiry</th>
@@ -93,34 +92,34 @@ const Admin: React.FC<{ user: any }> = () => {
                     <th className="p-6 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/50">
-                  {users.filter(u => u.username.includes(search.toLowerCase())).map(u => (
-                    <tr key={u.uid} className="hover:bg-slate-800/20 transition-colors">
+                <tbody className="divide-y divide-slate-800/30">
+                  {users.filter(u => u.username.toLowerCase().includes(search.toLowerCase())).map(u => (
+                    <tr key={u.uid} className="hover:bg-slate-800/10 transition-colors">
                       <td className="p-6">
                         <div className="flex items-center space-x-4">
                            <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center">
                               <UserIcon className={`w-5 h-5 ${u.isAdmin ? 'text-red-500' : 'text-slate-600'}`} />
                            </div>
-                           <span className="font-black text-slate-200 uppercase italic">{u.username}</span>
+                           <span className="font-black text-slate-200 uppercase italic text-sm tracking-tight">{u.username}</span>
                         </div>
                       </td>
                       <td className="p-6">
                         {u.isVIP ? (
-                           <span className="inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">VIP</span>
+                           <span className="inline-flex px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">VIP ACTIVE</span>
                         ) : (
-                          <span className="inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-800 text-slate-600 border border-slate-700">Standard</span>
+                          <span className="inline-flex px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-slate-800 text-slate-600 border border-slate-700">Standard</span>
                         )}
                       </td>
-                      <td className="p-6 text-xs font-bold text-slate-500">
-                        {u.vipUntil ? new Date(u.vipUntil).toLocaleString() : 'N/A'}
+                      <td className="p-6 text-[11px] font-black text-slate-500 font-mono">
+                        {u.vipUntil ? new Date(u.vipUntil).toLocaleString() : '---'}
                       </td>
                       <td className="p-6">
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1 max-w-[200px]">
                           {timeOptions.map(opt => (
                              <button 
                                 key={opt.label}
                                 onClick={() => setVipDuration(u.uid, opt.val)}
-                                className="text-[9px] font-black bg-slate-950 hover:bg-cyan-600 border border-slate-800 hover:border-cyan-400 text-slate-500 hover:text-white px-2 py-1 rounded-lg transition-all"
+                                className="text-[9px] font-black bg-slate-950 hover:bg-cyan-600 border border-slate-800 hover:border-cyan-400 text-slate-600 hover:text-white px-2 py-1 rounded-lg transition-all"
                              >
                                {opt.label}
                              </button>
