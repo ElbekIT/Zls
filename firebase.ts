@@ -1,3 +1,4 @@
+
 import { initializeApp } from "firebase/app";
 import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
@@ -15,26 +16,23 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
 export const auth = getAuth(app);
-if (typeof window !== 'undefined') {
-  setPersistence(auth, browserLocalPersistence).catch(() => {});
-}
+setPersistence(auth, browserLocalPersistence);
 
 export const db = getFirestore(app);
 
-// Enable Offline Persistence
+// Enable Offline Persistence for a truly "Pro" feel
 if (typeof window !== 'undefined') {
   enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code === 'failed-precondition') {
-      console.warn("Multiple tabs open, persistence disabled.");
-    } else if (err.code === 'unimplemented') {
-      console.warn("Browser lacks offline support.");
-    }
+      if (err.code === 'failed-precondition') {
+          console.warn("Multiple tabs open, persistence disabled.");
+      } else if (err.code === 'unimplemented') {
+          console.warn("Browser lacks offline support.");
+      }
   });
 }
 
-isSupported().then((yes) => {
+isSupported().then(yes => {
   if (yes) getAnalytics(app);
 });
 
