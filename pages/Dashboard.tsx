@@ -6,12 +6,11 @@ import { db } from '../firebase';
 import { LicenseKey, UserData } from '../types';
 import { KeyTable } from '../components/KeyTable';
 import { GenerateKeyModal } from '../components/GenerateKeyModal';
-import { Plus, Key, Activity, Shield, Crown, Clock, ShieldAlert, Zap, Loader2, Sparkles, Link as LinkIcon, CheckCircle2 } from 'lucide-react';
+import { Plus, Key, Activity, Crown, Clock, ShieldAlert, Loader2, Sparkles, Link as LinkIcon, CheckCircle2 } from 'lucide-react';
 
 const Dashboard: React.FC<{ user: User; userData: UserData | null }> = ({ user, userData }) => {
   const [keys, setKeys] = useState<LicenseKey[]>([]);
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -27,9 +26,8 @@ const Dashboard: React.FC<{ user: User; userData: UserData | null }> = ({ user, 
       const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as LicenseKey[];
       setKeys(data);
       setLoading(false);
-      setSyncing(false);
     }, (err) => {
-      console.error("Critical Sync Error:", err);
+      console.error(err);
       setLoading(false);
     });
 
@@ -37,121 +35,101 @@ const Dashboard: React.FC<{ user: User; userData: UserData | null }> = ({ user, 
   }, [user.uid]);
 
   const copyBaseApi = () => {
-    const url = `${window.location.origin}/#/connect`;
+    const url = `${window.location.origin}/connect`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
-    setTimeout(() => setCopiedLink(null), 2000);
+    setTimeout(() => setCopiedLink(false), 2000);
   };
 
   const activeCount = keys.filter(k => k.isActive && (!k.expiresAt || Date.now() < k.expiresAt)).length;
   const canCreate = userData?.isAdmin || userData?.isVIP || (!userData?.trialUsed);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 pb-20">
+    <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-1000 pb-20">
       
       {/* Profile HUD */}
-      <div className="cyber-card rounded-[3.5rem] p-12 md:p-16 relative overflow-hidden group border-cyan-500/20">
-        <div className="absolute top-[-20%] right-[-5%] opacity-[0.03] group-hover:opacity-[0.1] transition-all duration-1000 pointer-events-none">
-          <Shield className="w-[600px] h-[600px] text-cyan-400 rotate-12" />
+      <div className="gold-card rounded-[3.5rem] p-12 md:p-16 relative overflow-hidden group">
+        <div className="absolute top-[-10%] right-[-10%] opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-1000 pointer-events-none">
+          <Crown className="w-[500px] h-[500px] text-amber-500 rotate-12" />
         </div>
         
-        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-16 relative z-10">
-          <div className="flex items-center space-x-12">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-12 relative z-10">
+          <div className="flex items-center space-x-10">
             <div className="relative">
-              <div className="absolute inset-0 bg-cyan-500 blur-[80px] opacity-25 animate-pulse"></div>
+              <div className="absolute inset-0 bg-amber-500 blur-[60px] opacity-20 animate-pulse"></div>
               <img 
-                src={`https://ui-avatars.com/api/?name=${userData?.username || 'U'}&background=06B6D4&color=fff&bold=true&size=256`} 
-                className="w-36 h-36 rounded-[3rem] border-4 border-white/5 relative z-10 shadow-2xl transition-transform group-hover:scale-105 duration-700" 
+                src={`https://ui-avatars.com/api/?name=${userData?.username || 'U'}&background=f59e0b&color=020617&bold=true&size=256`} 
+                className="w-32 h-32 rounded-[2.5rem] border-2 border-white/10 relative z-10 shadow-2xl" 
                 alt="Identity" 
               />
               {userData?.isVIP && (
-                <div className="absolute -top-5 -right-5 bg-gradient-to-br from-yellow-400 to-orange-600 p-4 rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.4)] z-20 animate-bounce">
-                  <Crown className="w-7 h-7 text-black" />
+                <div className="absolute -top-4 -right-4 bg-amber-500 p-3 rounded-2xl shadow-xl z-20">
+                  <Crown className="w-5 h-5 text-slate-950" />
                 </div>
               )}
             </div>
             
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div className="flex items-center space-x-4">
-                <h1 className="text-7xl font-black text-white italic tracking-tighter uppercase leading-none neon-glow">
-                  {userData?.username || 'GUEST_NODE'}
+                <h1 className="text-6xl font-black text-white italic tracking-tighter uppercase leading-none">
+                  {userData?.username || 'AGENT_X'}
                 </h1>
-                {userData?.isVIP && <Sparkles className="w-8 h-8 text-yellow-500 animate-pulse" />}
+                {userData?.isVIP && <Sparkles className="w-6 h-6 text-amber-500 animate-pulse" />}
               </div>
-              <div className="flex flex-wrap items-center gap-5">
-                <div className={`px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.4em] border flex items-center ${userData?.isVIP ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.1)]' : 'bg-slate-800/50 text-slate-500 border-slate-700'}`}>
-                   <div className={`w-2.5 h-2.5 rounded-full mr-4 animate-pulse ${userData?.isVIP ? 'bg-cyan-400' : 'bg-slate-500'}`}></div>
-                  {userData?.isVIP ? 'VIP_LEVEL_ACCESS' : 'TRIAL_RESTRICTED'}
+              <div className="flex flex-wrap items-center gap-4">
+                <div className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border flex items-center ${userData?.isVIP ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-slate-900 text-slate-500 border-white/5'}`}>
+                  {userData?.isVIP ? 'PRESTIGE_ACCESS' : 'TRIAL_NODE'}
                 </div>
                 <button 
                   onClick={copyBaseApi}
-                  className="group flex items-center space-x-3 text-slate-400 text-[10px] font-mono tracking-widest bg-black/60 px-5 py-2.5 rounded-2xl border border-white/5 hover:border-cyan-500/50 hover:text-cyan-400 transition-all"
+                  className="flex items-center space-x-2 text-slate-500 text-[9px] font-bold tracking-widest bg-slate-950/80 px-4 py-2 rounded-xl border border-white/5 hover:border-amber-500/30 hover:text-amber-500 transition-all"
                 >
-                  {copiedLink ? <CheckCircle2 className="w-3.5 h-3.5" /> : <LinkIcon className="w-3.5 h-3.5" />}
-                  <span>{copiedLink ? 'API_URL_COPIED' : 'COPY_CONNECT_API'}</span>
+                  {copiedLink ? <CheckCircle2 className="w-3 h-3" /> : <LinkIcon className="w-3 h-3" />}
+                  <span>{copiedLink ? 'COPIED' : 'COPY_API_BRIDGE'}</span>
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-6">
-             {userData?.trialUsed && !userData?.isVIP && !userData?.isAdmin && (
-               <div className="flex items-center space-x-3 px-8 py-4 bg-red-500/10 border border-red-500/20 rounded-2xl animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.1)]">
-                  <ShieldAlert className="w-5 h-5 text-red-500" />
-                  <span className="text-[11px] font-black text-red-400 uppercase tracking-widest">TRIAL EXHAUSTED: Upgrade Required</span>
-               </div>
-             )}
-             <button 
-                disabled={!canCreate || loading}
-                onClick={() => setIsModalOpen(true)}
-                className={`group px-14 py-7 btn-elite text-white font-black rounded-2xl transition-all active:scale-95 disabled:opacity-20 uppercase tracking-[0.4em] text-[12px] flex items-center italic ${!canCreate ? 'cursor-not-allowed grayscale' : ''}`}
-              >
-                <Plus className="w-6 h-6 mr-5 group-hover:rotate-90 transition-transform" />
-                {canCreate ? 'DEPLOY_LICENSE' : 'QUOTA_LOCKED'}
-              </button>
-          </div>
+          <button 
+            disabled={!canCreate || loading}
+            onClick={() => setIsModalOpen(true)}
+            className="group px-12 py-6 btn-gold text-slate-950 font-black rounded-2xl transition-all active:scale-95 disabled:opacity-20 uppercase tracking-widest text-[11px] flex items-center italic"
+          >
+            <Plus className="w-5 h-5 mr-3 group-hover:rotate-90 transition-transform" />
+            {canCreate ? 'Generate License' : 'Quota Locked'}
+          </button>
         </div>
       </div>
 
-      {/* Intelligence Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {[
-          { label: 'Registered Keys', value: keys.length, icon: Key, color: 'text-cyan-400', bg: 'bg-cyan-500/5', shadow: 'shadow-cyan-500/5' },
-          { label: 'Active Signals', value: activeCount, icon: Activity, color: 'text-emerald-400', bg: 'bg-emerald-500/5', shadow: 'shadow-emerald-500/5' },
-          { label: 'Access Protocol', value: (userData?.isVIP || userData?.isAdmin) ? 'UNLIMITED' : '1H_TRIAL', icon: Clock, color: 'text-purple-400', bg: 'bg-purple-500/5', shadow: 'shadow-purple-500/5' }
+          { label: 'Registered Registry', value: keys.length, icon: Key, color: 'text-amber-500' },
+          { label: 'Active Signals', value: activeCount, icon: Activity, color: 'text-green-500' },
+          { label: 'Protocol Level', value: (userData?.isVIP || userData?.isAdmin) ? 'ELITE' : 'TRIAL', icon: Clock, color: 'text-blue-500' }
         ].map((s, i) => (
-          <div key={i} className={`cyber-card p-14 rounded-[3.5rem] border border-white/5 group hover:border-cyan-500/40 transition-all duration-700 ${s.bg} ${s.shadow}`}>
-            <div className={`p-6 rounded-2xl bg-black/60 border border-white/10 w-fit mb-12 ${s.color} group-hover:scale-110 group-hover:rotate-12 transition-all shadow-xl`}>
-              <s.icon className="w-10 h-10" />
+          <div key={i} className="gold-card p-10 rounded-[2.5rem] border border-white/5 group hover:border-amber-500/20">
+            <div className={`p-4 rounded-xl bg-slate-950 border border-white/5 w-fit mb-8 ${s.color}`}>
+              <s.icon className="w-8 h-8" />
             </div>
-            <p className="text-slate-500 text-[13px] font-black uppercase tracking-[0.5em] mb-5">{s.label}</p>
-            <h3 className="text-7xl font-black text-white italic tracking-tighter">{s.value}</h3>
+            <p className="text-slate-500 text-[11px] font-black uppercase tracking-widest mb-3">{s.label}</p>
+            <h3 className="text-5xl font-black text-white italic tracking-tighter">{s.value}</h3>
           </div>
         ))}
       </div>
 
-      {/* Registry Section */}
-      <div className="space-y-12">
-        <div className="flex items-center justify-between px-6">
-          <div className="flex items-center space-x-6">
-            <div className="w-2.5 h-14 bg-cyan-600 rounded-full shadow-[0_0_30px_rgba(6,182,212,1)] animate-neon"></div>
-            <h2 className="text-4xl font-black text-white uppercase italic tracking-tighter">Encrypted Registry</h2>
-          </div>
-          {syncing && (
-            <div className="flex items-center space-x-4 text-cyan-400 font-black text-[11px] uppercase tracking-widest animate-pulse">
-               <Loader2 className="w-5 h-5 animate-spin" />
-               <span>Syncing Mainframe...</span>
-            </div>
-          )}
+      {/* Registry Table Section */}
+      <div className="space-y-8">
+        <div className="flex items-center space-x-4 px-4">
+          <div className="w-1.5 h-10 bg-amber-500 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.5)]"></div>
+          <h2 className="text-3xl font-black text-white uppercase italic tracking-tight">Mainframe Registry</h2>
         </div>
         
         {loading ? (
-          <div className="py-40 flex flex-col items-center justify-center space-y-8 opacity-50">
-             <div className="relative w-20 h-20">
-                <div className="absolute inset-0 border-t-2 border-cyan-500 rounded-full animate-spin"></div>
-                <div className="absolute inset-2 border-t-2 border-purple-500 rounded-full animate-spin duration-700"></div>
-             </div>
-             <p className="text-[14px] font-black uppercase tracking-[0.7em] text-cyan-400 animate-pulse">Accessing Data Nodes...</p>
+          <div className="py-20 flex flex-col items-center justify-center space-y-4">
+             <Loader2 className="w-10 h-10 text-amber-500 animate-spin" />
+             <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">Syncing Nodes...</p>
           </div>
         ) : (
           <KeyTable keys={keys} onRefresh={() => {}} />

@@ -27,7 +27,8 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
   };
 
   const handleCopyLink = (key: string, id: string) => {
-    const url = `${window.location.origin}/#/connect?key=${key}`;
+    // Clean URL without # for API
+    const url = `${window.location.origin}/connect?key=${key}`;
     navigator.clipboard.writeText(url);
     setLinkCopied(id);
     setTimeout(() => setLinkCopied(null), 2000);

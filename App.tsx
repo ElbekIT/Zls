@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
@@ -69,7 +69,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <HashRouter>
+    <Router>
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <Login />} />
         <Route path="/connect" element={<Connect />} />
@@ -91,7 +91,7 @@ const App: React.FC = () => {
         />
         <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
       </Routes>
-    </HashRouter>
+    </Router>
   );
 };
 

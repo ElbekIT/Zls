@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { Shield, Lock, User as UserIcon, Mail, Zap, Loader2, ArrowRight, ShieldAlert } from 'lucide-react';
+import { Crown, Lock, User as UserIcon, Mail, Loader2, ArrowRight, ShieldCheck } from 'lucide-react';
 
 const USER_LIMIT = 5;
 
@@ -22,9 +22,7 @@ const Login: React.FC = () => {
         const q = query(collection(db, 'users'), where('isAdmin', '==', false));
         const snap = await getDocs(q);
         setUserCount(snap.size);
-      } catch (e) { 
-        console.warn("Permission check pending: Rules must be published on Firebase Console.");
-      }
+      } catch (e) { console.warn(e); }
     };
     fetchStats();
   }, [isRegistering]);
@@ -38,17 +36,16 @@ const Login: React.FC = () => {
 
     try {
       if (isRegistering) {
-        // Double check count before registration
         const countQuery = query(collection(db, 'users'), where('isAdmin', '==', false));
         const countSnap = await getDocs(countQuery);
         
         if (countSnap.size >= USER_LIMIT) {
-          throw new Error("SYSTEM FULL: Hozirda VIP o'rinlar qolmagan. Admin bilan bog'laning.");
+          throw new Error("SISTEMA TO'LA: Hozirda VIP o'rinlar qolmagan.");
         }
         
         const uQuery = query(collection(db, 'users'), where('username', '==', formattedUsername));
         const uSnap = await getDocs(uQuery);
-        if (!uSnap.empty) throw new Error("IDENTITY TAKEN: Bu username allaqachon band qilingan.");
+        if (!uSnap.empty) throw new Error("BAND: Bu username allaqachon olingan.");
 
         const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
         const isAdmin = formattedUsername === 'elbekgamer' && password === '79178195327';
@@ -65,107 +62,94 @@ const Login: React.FC = () => {
         });
 
         await updateProfile(cred.user, { displayName: formattedUsername });
-        setError("Success: Node created. Authorized for login.");
+        setError("Success: Akkaunt yaratildi. Kirishingiz mumkin.");
         setIsRegistering(false);
-        setUserCount(prev => prev + 1);
       } else {
         const q = query(collection(db, 'users'), where('username', '==', formattedUsername));
         const snap = await getDocs(q);
         
         if (snap.empty) {
           if (formattedUsername === 'elbekgamer' && password === '79178195327') {
-             // Special case for root admin login if first time
-             await signInWithEmailAndPassword(auth, 'elbekgamer@venom.vip', password);
+             await signInWithEmailAndPassword(auth, 'elbekgamer@elbek.panel', password);
           } else {
-            throw new Error("ACCESS DENIED: Bunday profil topilmadi.");
+            throw new Error("XATO: Bunday profil topilmadi.");
           }
         } else {
           await signInWithEmailAndPassword(auth, snap.docs[0].data().email, password);
         }
       }
     } catch (err: any) {
-      let msg = err.message.replace('Firebase:', '').trim();
-      if (msg.includes('insufficient permissions')) {
-        msg = "FIREBASE ERROR: Iltimos, Firebase Console'da 'Rules' bo'limiga kodni qo'ying va 'Publish' tugmasini bosing.";
-      }
-      setError(msg);
+      setError(err.message.replace('Firebase:', '').trim());
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-[#010409] relative overflow-hidden">
-      {/* Dynamic Background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(6,182,212,0.1),transparent_50%)]"></div>
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-cyan-500/5 blur-[150px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-500/5 blur-[150px] animate-pulse duration-700"></div>
-      </div>
-
-      <div className="w-full max-w-md relative animate-in zoom-in-95 duration-700">
-        <div className="text-center mb-12">
-          <div className="inline-flex p-5 rounded-[2rem] bg-cyan-600/10 border border-cyan-500/20 mb-8 shadow-[0_0_40px_rgba(6,182,212,0.2)]">
-            <Shield className="w-14 h-14 text-cyan-400" />
+    <div className="min-h-screen flex items-center justify-center p-6 bg-[#020617] relative">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.05),transparent_70%)]"></div>
+      
+      <div className="w-full max-w-md relative">
+        <div className="text-center mb-10 space-y-4">
+          <div className="inline-flex p-6 rounded-[2.5rem] bg-amber-500/10 border border-amber-500/20 shadow-[0_0_50px_rgba(245,158,11,0.15)] animate-soft">
+            <Crown className="w-12 h-12 text-amber-500 gold-glow" />
           </div>
-          <h1 className="text-7xl font-black text-white italic tracking-tighter uppercase leading-none neon-glow">
-            VENOM<span className="text-cyan-500">KEY</span>
+          <h1 className="text-6xl font-black text-white italic tracking-tighter uppercase leading-none">
+            ELBEK<span className="text-amber-500">PANEL</span>
           </h1>
-          <p className="text-slate-600 text-[10px] font-black uppercase tracking-[0.8em] mt-4 opacity-50">Advanced_Identity_Matrix</p>
+          <p className="text-slate-600 text-[9px] font-black uppercase tracking-[1em] opacity-40">Elite Management System</p>
         </div>
 
-        <div className="cyber-card rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl">
+        <div className="gold-card rounded-[3rem] border border-white/5 overflow-hidden">
           <div className="p-12">
             <div className="flex items-center justify-between mb-10">
-              <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">{isRegistering ? 'Initialize' : 'Authorize'}</h2>
+              <h2 className="text-xl font-black text-white uppercase tracking-tight">{isRegistering ? 'Register' : 'Login'}</h2>
               {isRegistering && (
-                <div className="flex flex-col items-end">
-                   <span className="text-[10px] font-black px-4 py-1.5 bg-cyan-500/10 text-cyan-400 rounded-full border border-cyan-500/20 uppercase tracking-widest animate-pulse">
-                    {Math.max(0, USER_LIMIT - userCount)} Slots Left
-                   </span>
-                </div>
+                <span className="text-[9px] font-black px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full border border-amber-500/20 uppercase">
+                  {Math.max(0, USER_LIMIT - userCount)} Slots
+                </span>
               )}
             </div>
 
             {error && (
-              <div className={`mb-8 p-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] border animate-in slide-in-from-top-4 ${error.includes('Success') ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+              <div className={`mb-8 p-4 rounded-2xl text-[10px] font-bold text-center border ${error.includes('Success') ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
                 {error}
               </div>
             )}
 
-            <form onSubmit={handleAuth} className="space-y-6">
+            <form onSubmit={handleAuth} className="space-y-5">
               {isRegistering && (
-                <div className="group relative">
-                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-700 group-focus-within:text-cyan-500 transition-colors" />
+                <div className="relative group">
+                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-amber-500 transition-colors" />
                   <input 
-                    type="email" placeholder="Protocol: Email" value={email} onChange={e => setEmail(e.target.value)} required
-                    className="w-full bg-black/40 border border-white/5 rounded-2xl pl-14 pr-6 py-5 text-sm text-slate-200 outline-none focus:border-cyan-500/40 transition-all font-bold placeholder:text-slate-800"
+                    type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required
+                    className="w-full bg-slate-950 border border-white/5 rounded-2xl pl-14 pr-6 py-4 text-sm text-white outline-none focus:border-amber-500/40 transition-all font-bold"
                   />
                 </div>
               )}
-              <div className="group relative">
-                <UserIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-700 group-focus-within:text-cyan-500 transition-colors" />
+              <div className="relative group">
+                <UserIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-amber-500 transition-colors" />
                 <input 
-                  type="text" placeholder="Protocol: Username" value={username} onChange={e => setUsername(e.target.value)} required
-                  className="w-full bg-black/40 border border-white/5 rounded-2xl pl-14 pr-6 py-5 text-sm text-slate-200 outline-none focus:border-cyan-500/40 transition-all font-bold placeholder:text-slate-800"
+                  type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} required
+                  className="w-full bg-slate-950 border border-white/5 rounded-2xl pl-14 pr-6 py-4 text-sm text-white outline-none focus:border-amber-500/40 transition-all font-bold"
                 />
               </div>
-              <div className="group relative">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-700 group-focus-within:text-cyan-500 transition-colors" />
+              <div className="relative group">
+                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-amber-500 transition-colors" />
                 <input 
-                  type="password" placeholder="Protocol: Password" value={password} onChange={e => setPassword(e.target.value)} required
-                  className="w-full bg-black/40 border border-white/5 rounded-2xl pl-14 pr-6 py-5 text-sm text-slate-200 outline-none focus:border-cyan-500/40 transition-all font-bold placeholder:text-slate-800"
+                  type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required
+                  className="w-full bg-slate-950 border border-white/5 rounded-2xl pl-14 pr-6 py-4 text-sm text-white outline-none focus:border-amber-500/40 transition-all font-bold"
                 />
               </div>
 
               <button 
                 disabled={loading}
-                className="w-full py-6 btn-elite text-white font-black rounded-2xl transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center uppercase tracking-[0.4em] text-[11px] italic"
+                className="w-full py-5 btn-gold text-slate-950 font-black rounded-2xl flex items-center justify-center uppercase tracking-widest text-[11px] italic"
               >
-                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                   <>
-                    <span>{isRegistering ? 'Register Node' : 'Initialize Session'}</span>
-                    <ArrowRight className="w-5 h-5 ml-3" />
+                    <span>{isRegistering ? 'Create Access' : 'Enter Panel'}</span>
+                    <ArrowRight className="w-4 h-4 ml-2" />
                   </>
                 )}
               </button>
@@ -173,13 +157,10 @@ const Login: React.FC = () => {
           </div>
 
           <button 
-            onClick={() => {
-              setIsRegistering(!isRegistering);
-              setError('');
-            }}
-            className="w-full py-8 bg-slate-900/40 border-t border-white/5 text-[10px] font-black text-slate-600 uppercase tracking-[0.5em] hover:text-cyan-400 hover:bg-slate-900 transition-all"
+            onClick={() => { setIsRegistering(!isRegistering); setError(''); }}
+            className="w-full py-7 bg-slate-950/50 border-t border-white/5 text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] hover:text-amber-500 transition-all"
           >
-            {isRegistering ? 'Back to Login Protocol' : 'Request New Identity Node'}
+            {isRegistering ? 'Back to Login' : 'Request Registry Access'}
           </button>
         </div>
       </div>
