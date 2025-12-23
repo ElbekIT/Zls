@@ -4,64 +4,74 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VenomKey - VIP Management</title>
+    <title>VENOM KEY - NEURAL INTERFACE</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
+      :root {
+        --venom-cyan: #06b6d4;
+        --venom-purple: #8b5cf6;
+        --bg-deep: #020617;
+      }
       body {
-        font-family: 'Inter', sans-serif;
-        background-color: #020617; /* slate-950 */
-        color: #f8fafc; /* slate-50 */
+        font-family: 'Space Grotesk', sans-serif;
+        background-color: var(--bg-deep);
+        color: #f8fafc;
         overflow-x: hidden;
         user-select: none;
         -webkit-user-select: none;
       }
-      .glass {
-        background: rgba(15, 23, 42, 0.7);
-        backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+      .cyber-card {
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
       }
-      .cyber-gradient {
-        background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
+      .glow-border {
+        position: relative;
+      }
+      .glow-border::after {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        background: linear-gradient(45deg, var(--venom-cyan), transparent, var(--venom-purple));
+        z-index: -1;
+        border-radius: inherit;
+        opacity: 0.15;
+      }
+      .animate-pulse-slow {
+        animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 0.1; }
+        50% { opacity: 0.3; }
       }
       #security-overlay {
         display: none;
         position: fixed;
         inset: 0;
         z-index: 10000;
-        background: rgba(0,0,0,0.98);
-        backdrop-filter: blur(40px);
+        background: rgba(0,0,0,0.95);
+        backdrop-filter: blur(60px);
         align-items: center;
         justify-content: center;
         text-align: center;
         color: #ef4444;
       }
-      .neon-glow {
-        box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
-      }
-      /* Custom scrollbar */
-      ::-webkit-scrollbar { width: 6px; }
-      ::-webkit-scrollbar-track { background: #020617; }
+      ::-webkit-scrollbar { width: 4px; }
+      ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
     </style>
     <script>
-      // Ultra-Strict Anti-Inspect Security
-      const blockAction = (e) => {
+      const block = (e) => {
         e.preventDefault();
-        const overlay = document.getElementById('security-overlay');
-        if (overlay) overlay.style.display = 'flex';
+        document.getElementById('security-overlay').style.display = 'flex';
         return false;
       };
-
-      document.addEventListener('contextmenu', blockAction);
-      document.onkeydown = function(e) {
-        // Block F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U, Ctrl+S, Ctrl+P
-        if (e.keyCode == 123 || 
-            (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || 
-            (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83 || e.keyCode == 80))) {
-          return blockAction(e);
+      document.addEventListener('contextmenu', block);
+      document.onkeydown = (e) => {
+        if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && e.keyCode == 85)) {
+          return block(e);
         }
       };
     </script>
@@ -82,14 +92,9 @@
   <body>
     <div id="root"></div>
     <div id="security-overlay" onclick="location.reload()">
-      <div class="p-8 max-w-lg">
-        <div class="mb-6 inline-flex p-4 rounded-full bg-red-500/20 text-red-500">
-           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="m16 14-4-4"/><path d="m8 10 4 4"/><path d="m12 10-4 4"/><path d="m21 15-9-9-9 9"/><path d="m21 9-9-9-9 9"/></svg>
-        </div>
-        <h1 class="text-5xl font-black mb-4 uppercase italic tracking-tighter">URINMANG ILTIMOS</h1>
-        <p class="text-xl font-bold mb-4">Security violation detected. Access terminated.</p>
-        <p class="text-slate-500 text-sm">Sayt kodini ko'rish yoki o'zgartirish qat'iyan man etiladi. Xavfsizlik choralari 100% faol holatda.</p>
-        <div class="mt-10 font-mono text-xs text-red-500/50 animate-pulse">SYSTEM_LOCKED_OVERLAY_ACTIVE_V2.5</div>
+      <div class="p-10">
+        <h1 class="text-6xl font-black mb-4 italic tracking-tighter">BREACH DETECTED</h1>
+        <p class="text-xl font-medium opacity-50 uppercase tracking-widest">Unauthorized Access Attempt Blocked</p>
       </div>
     </div>
   <script type="module" src="/index.tsx"></script>

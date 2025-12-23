@@ -7,7 +7,6 @@ import { auth, db } from './firebase';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
-import Connect from './pages/Connect';
 import { Layout } from './components/Layout';
 import { UserData } from './types';
 
@@ -17,6 +16,14 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Safety Fallback: Force stop loading after 8 seconds
+    const safetyTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn("Auth sync took too long, forcing entry.");
+        setLoading(false);
+      }
+    }, 8000);
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       try {
         setUser(currentUser);
@@ -25,45 +32,42 @@ const App: React.FC = () => {
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             setUserData(docSnap.data() as UserData);
-          } else {
-            // User authenticated but no document in Firestore
-            setUserData(null);
           }
-        } else {
-          setUserData(null);
         }
-      } catch (error) {
-        console.error("Auth state processing error:", error);
-        // Ensure loading turns off even on error
+      } catch (err) {
+        console.error("Auth process error:", err);
       } finally {
         setLoading(false);
+        clearTimeout(safetyTimeout);
       }
     });
-    return () => unsubscribe();
-  }, []);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(safetyTimeout);
+    };
+  }, [loading]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center overflow-hidden">
-        <div className="relative">
-          <div className="absolute inset-0 bg-cyan-500 blur-[100px] opacity-10 animate-pulse"></div>
-          <div className="relative flex flex-col items-center">
-            <div className="w-16 h-16 border-4 border-slate-800 border-t-cyan-500 rounded-full animate-spin"></div>
-            <div className="mt-6 flex flex-col items-center space-y-2">
-               <p className="text-cyan-400 font-black tracking-[0.4em] uppercase text-[10px] animate-pulse">
-                 Synchronizing Encryption
-               </p>
-               <div className="h-0.5 w-32 bg-slate-900 rounded-full overflow-hidden">
-                 <div className="h-full bg-cyan-500 animate-[loading_2s_infinite]"></div>
-               </div>
-            </div>
+      <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-6">
+        <div className="relative w-24 h-24 mb-8">
+          <div className="absolute inset-0 border-t-2 border-cyan-500 rounded-full animate-spin"></div>
+          <div className="absolute inset-2 border-t-2 border-purple-500 rounded-full animate-spin duration-700"></div>
+          <div className="absolute inset-4 border-t-2 border-white/20 rounded-full animate-spin duration-1000"></div>
+        </div>
+        <div className="text-center space-y-3">
+          <h2 className="text-cyan-400 font-black tracking-[0.6em] uppercase text-xs animate-pulse">
+            Neural Sync Active
+          </h2>
+          <div className="h-[2px] w-48 bg-slate-900 rounded-full overflow-hidden">
+             <div className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 animate-[loading_2s_infinite]"></div>
           </div>
         </div>
         <style>{`
           @keyframes loading {
-            0% { width: 0%; transform: translateX(-100%); }
-            50% { width: 100%; transform: translateX(0%); }
-            100% { width: 0%; transform: translateX(100%); }
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
           }
         `}</style>
       </div>
@@ -73,11 +77,7 @@ const App: React.FC = () => {
   return (
     <HashRouter>
       <Routes>
-        <Route path="/connect" element={<Connect />} />
-        <Route 
-          path="/login" 
-          element={user ? <Navigate to="/dashboard" replace /> : <Login />} 
-        />
+        <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <Login />} />
         <Route 
           path="/dashboard" 
           element={user ? (
