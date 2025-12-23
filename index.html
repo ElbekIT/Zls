@@ -4,77 +4,62 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VENOM KEY - NEURAL INTERFACE</title>
+    <title>VENOM KEY - PRO INTERFACE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
       :root {
-        --venom-cyan: #06b6d4;
-        --venom-purple: #8b5cf6;
-        --bg-deep: #020617;
+        --v-cyan: #06b6d4;
+        --v-purple: #8b5cf6;
+        --v-bg: #020617;
       }
       body {
         font-family: 'Space Grotesk', sans-serif;
-        background-color: var(--bg-deep);
+        background-color: var(--v-bg);
         color: #f8fafc;
-        overflow-x: hidden;
         user-select: none;
         -webkit-user-select: none;
+        overflow-x: hidden;
       }
-      .cyber-card {
-        background: rgba(15, 23, 42, 0.4);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      .glass-card {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
       }
-      .glow-border {
-        position: relative;
+      .neon-text {
+        text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
       }
-      .glow-border::after {
-        content: '';
+      .neon-border {
+        border-color: rgba(6, 182, 212, 0.3);
+        box-shadow: inset 0 0 15px rgba(6, 182, 212, 0.05);
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+        box-shadow: 0 10px 25px -5px rgba(8, 145, 178, 0.4);
+      }
+      .btn-primary:hover {
+        box-shadow: 0 15px 30px -5px rgba(8, 145, 178, 0.6);
+        transform: translateY(-2px);
+      }
+      @keyframes scanline {
+        0% { transform: translateY(-100%); }
+        100% { transform: translateY(100%); }
+      }
+      .scanline {
+        width: 100%;
+        height: 100px;
+        z-index: 100;
+        background: linear-gradient(0deg, transparent 0%, rgba(6, 182, 212, 0.05) 50%, transparent 100%);
         position: absolute;
-        inset: -1px;
-        background: linear-gradient(45deg, var(--venom-cyan), transparent, var(--venom-purple));
-        z-index: -1;
-        border-radius: inherit;
-        opacity: 0.15;
-      }
-      .animate-pulse-slow {
-        animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-      }
-      @keyframes pulse {
-        0%, 100% { opacity: 0.1; }
-        50% { opacity: 0.3; }
-      }
-      #security-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        z-index: 10000;
-        background: rgba(0,0,0,0.95);
-        backdrop-filter: blur(60px);
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        color: #ef4444;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        animation: scanline 8s linear infinite;
       }
       ::-webkit-scrollbar { width: 4px; }
-      ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
     </style>
-    <script>
-      const block = (e) => {
-        e.preventDefault();
-        document.getElementById('security-overlay').style.display = 'flex';
-        return false;
-      };
-      document.addEventListener('contextmenu', block);
-      document.onkeydown = (e) => {
-        if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && e.keyCode == 85)) {
-          return block(e);
-        }
-      };
-    </script>
     <script type="importmap">
     {
       "imports": {
@@ -90,13 +75,8 @@
   <link rel="stylesheet" href="/index.css">
 </head>
   <body>
+    <div class="scanline"></div>
     <div id="root"></div>
-    <div id="security-overlay" onclick="location.reload()">
-      <div class="p-10">
-        <h1 class="text-6xl font-black mb-4 italic tracking-tighter">BREACH DETECTED</h1>
-        <p class="text-xl font-medium opacity-50 uppercase tracking-widest">Unauthorized Access Attempt Blocked</p>
-      </div>
-    </div>
   <script type="module" src="/index.tsx"></script>
 </body>
 </html>
