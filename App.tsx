@@ -7,6 +7,7 @@ import { auth, db } from './firebase';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
+import Connect from './pages/Connect';
 import { Layout } from './components/Layout';
 import { UserData } from './types';
 
@@ -16,7 +17,6 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Safety Fallback: Force stop loading after 8 seconds
     const safetyTimeout = setTimeout(() => {
       if (loading) {
         console.warn("Auth sync took too long, forcing entry.");
@@ -64,12 +64,6 @@ const App: React.FC = () => {
              <div className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 animate-[loading_2s_infinite]"></div>
           </div>
         </div>
-        <style>{`
-          @keyframes loading {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-          }
-        `}</style>
       </div>
     );
   }
@@ -78,6 +72,7 @@ const App: React.FC = () => {
     <HashRouter>
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <Login />} />
+        <Route path="/connect" element={<Connect />} />
         <Route 
           path="/dashboard" 
           element={user ? (

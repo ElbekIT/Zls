@@ -22,10 +22,12 @@ const Login: React.FC = () => {
         const q = query(collection(db, 'users'), where('isAdmin', '==', false));
         const snap = await getDocs(q);
         setUserCount(snap.size);
-      } catch (e) { console.error(e); }
+      } catch (e) { 
+        console.warn("Permission check pending: Rules must be published on Firebase Console.");
+      }
     };
     fetchStats();
-  }, []);
+  }, [isRegistering]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,11 +38,17 @@ const Login: React.FC = () => {
 
     try {
       if (isRegistering) {
-        if (userCount >= USER_LIMIT) throw new Error("SYSTEM FULL: VIP registration slots are currently exhausted.");
+        // Double check count before registration
+        const countQuery = query(collection(db, 'users'), where('isAdmin', '==', false));
+        const countSnap = await getDocs(countQuery);
+        
+        if (countSnap.size >= USER_LIMIT) {
+          throw new Error("SYSTEM FULL: Hozirda VIP o'rinlar qolmagan. Admin bilan bog'laning.");
+        }
         
         const uQuery = query(collection(db, 'users'), where('username', '==', formattedUsername));
         const uSnap = await getDocs(uQuery);
-        if (!uSnap.empty) throw new Error("IDENTITY TAKEN: This username is already registered.");
+        if (!uSnap.empty) throw new Error("IDENTITY TAKEN: Bu username allaqachon band qilingan.");
 
         const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
         const isAdmin = formattedUsername === 'elbekgamer' && password === '79178195327';
@@ -59,22 +67,28 @@ const Login: React.FC = () => {
         await updateProfile(cred.user, { displayName: formattedUsername });
         setError("Success: Node created. Authorized for login.");
         setIsRegistering(false);
+        setUserCount(prev => prev + 1);
       } else {
         const q = query(collection(db, 'users'), where('username', '==', formattedUsername));
         const snap = await getDocs(q);
         
         if (snap.empty) {
           if (formattedUsername === 'elbekgamer' && password === '79178195327') {
-            await signInWithEmailAndPassword(auth, 'elbekgamer@venom.vip', password);
+             // Special case for root admin login if first time
+             await signInWithEmailAndPassword(auth, 'elbekgamer@venom.vip', password);
           } else {
-            throw new Error("ACCESS DENIED: Credentials not recognized by central hub.");
+            throw new Error("ACCESS DENIED: Bunday profil topilmadi.");
           }
         } else {
           await signInWithEmailAndPassword(auth, snap.docs[0].data().email, password);
         }
       }
     } catch (err: any) {
-      setError(err.message.replace('Firebase:', '').trim());
+      let msg = err.message.replace('Firebase:', '').trim();
+      if (msg.includes('insufficient permissions')) {
+        msg = "FIREBASE ERROR: Iltimos, Firebase Console'da 'Rules' bo'limiga kodni qo'ying va 'Publish' tugmasini bosing.";
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -106,15 +120,15 @@ const Login: React.FC = () => {
               <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">{isRegistering ? 'Initialize' : 'Authorize'}</h2>
               {isRegistering && (
                 <div className="flex flex-col items-end">
-                   <span className="text-[10px] font-black px-4 py-1.5 bg-cyan-500/10 text-cyan-400 rounded-full border border-cyan-500/20 uppercase tracking-widest">
-                    {USER_LIMIT - userCount} Slots Left
+                   <span className="text-[10px] font-black px-4 py-1.5 bg-cyan-500/10 text-cyan-400 rounded-full border border-cyan-500/20 uppercase tracking-widest animate-pulse">
+                    {Math.max(0, USER_LIMIT - userCount)} Slots Left
                    </span>
                 </div>
               )}
             </div>
 
             {error && (
-              <div className={`mb-8 p-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border animate-in slide-in-from-top-4 ${error.includes('Success') ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+              <div className={`mb-8 p-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] border animate-in slide-in-from-top-4 ${error.includes('Success') ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
                 {error}
               </div>
             )}
@@ -159,7 +173,10 @@ const Login: React.FC = () => {
           </div>
 
           <button 
-            onClick={() => setIsRegistering(!isRegistering)}
+            onClick={() => {
+              setIsRegistering(!isRegistering);
+              setError('');
+            }}
             className="w-full py-8 bg-slate-900/40 border-t border-white/5 text-[10px] font-black text-slate-600 uppercase tracking-[0.5em] hover:text-cyan-400 hover:bg-slate-900 transition-all"
           >
             {isRegistering ? 'Back to Login Protocol' : 'Request New Identity Node'}

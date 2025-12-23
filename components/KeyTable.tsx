@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Trash2, Copy, CheckCircle2, ShieldAlert, Search, ChevronLeft, ChevronRight, XCircle, Clock, ExternalLink } from 'lucide-react';
+import { Trash2, Copy, CheckCircle2, ShieldAlert, Search, ChevronLeft, ChevronRight, XCircle, Clock, Link2 } from 'lucide-react';
 import { LicenseKey } from '../types';
 import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -9,6 +9,7 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [copied, setCopied] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState<string | null>(null);
   const size = 10;
 
   const filtered = keys.filter(k => 
@@ -25,6 +26,13 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
     setTimeout(() => setCopied(null), 2000);
   };
 
+  const handleCopyLink = (key: string, id: string) => {
+    const url = `${window.location.origin}/#/connect?key=${key}`;
+    navigator.clipboard.writeText(url);
+    setLinkCopied(id);
+    setTimeout(() => setLinkCopied(null), 2000);
+  };
+
   const handleDelete = async (id: string) => {
     if (confirm('Critical Action: Erase this license from registry?')) {
       await deleteDoc(doc(db, 'keys', id));
@@ -39,16 +47,18 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
 
   const getStatus = (k: LicenseKey) => {
     if (!k.isActive) return { l: 'BLOCKED', c: 'text-slate-500 bg-slate-900 border-slate-800' };
-    if (k.expiresAt && Date.now() > k.expiresAt) return { l: 'EXPIRED', c: 'text-red-400 bg-red-500/5 border-red-500/10 shadow-[0_0_10px_rgba(239,68,68,0.05)]' };
-    return { l: 'ACTIVE', c: 'text-cyan-400 bg-cyan-500/5 border-cyan-500/10 shadow-[0_0_10px_rgba(6,182,212,0.05)]' };
+    if (k.expiresAt && Date.now() > k.expiresAt) return { l: 'EXPIRED', c: 'text-red-400 bg-red-500/5 border-red-500/10' };
+    return { l: 'ACTIVE', c: 'text-cyan-400 bg-cyan-500/5 border-cyan-500/10' };
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center space-x-2 px-6 py-3 bg-slate-900/40 rounded-2xl border border-white/5 shadow-inner">
-           <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active Keys:</span>
-           <span className="text-[12px] font-black text-cyan-400 font-mono">{filtered.length}</span>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
+        <div className="flex items-center space-x-4">
+           <div className="px-6 py-3 bg-slate-900/40 rounded-2xl border border-white/5 shadow-inner flex items-center space-x-3">
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active Keys:</span>
+              <span className="text-[12px] font-black text-cyan-400 font-mono">{filtered.length}</span>
+           </div>
         </div>
         <div className="relative group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-cyan-400 transition-colors" />
@@ -67,8 +77,8 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
                 <th className="px-8 py-6">Identity Node</th>
                 <th className="px-8 py-6">Encryption Cipher</th>
                 <th className="px-8 py-6">Temporal Limit</th>
-                <th className="px-8 py-6 text-center">Status protocol</th>
-                <th className="px-8 py-6 text-right">System Control</th>
+                <th className="px-8 py-6 text-center">Status</th>
+                <th className="px-8 py-6 text-right">Control</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -79,7 +89,7 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
                     <td className="px-8 py-6">
                       <div className="flex flex-col">
                         <span className="font-black italic uppercase text-sm text-slate-200 tracking-tight">{k.game}</span>
-                        <span className="text-[9px] text-slate-600 font-bold uppercase tracking-widest mt-1">NODE: {k.id.slice(0, 8).toUpperCase()}</span>
+                        <span className="text-[9px] text-slate-600 font-bold uppercase tracking-widest mt-1">ID: {k.id.slice(0, 8).toUpperCase()}</span>
                       </div>
                     </td>
                     <td className="px-8 py-6">
@@ -87,13 +97,22 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
                         <code className="bg-black/60 px-5 py-3 rounded-2xl border border-white/5 text-cyan-400 font-mono text-[11px] tracking-widest shadow-inner group-hover:border-cyan-500/30 transition-all">
                           {k.keyString}
                         </code>
-                        <button 
-                          onClick={() => handleCopy(k.keyString, k.id)} 
-                          className="p-2.5 text-slate-600 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-xl transition-all"
-                          title="Copy Cipher"
-                        >
-                          {copied === k.id ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        </button>
+                        <div className="flex items-center space-x-1">
+                          <button 
+                            onClick={() => handleCopy(k.keyString, k.id)} 
+                            className="p-2.5 text-slate-600 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-xl transition-all"
+                            title="Copy Key"
+                          >
+                            {copied === k.id ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                          </button>
+                          <button 
+                            onClick={() => handleCopyLink(k.keyString, k.id)} 
+                            className="p-2.5 text-slate-600 hover:text-purple-400 hover:bg-purple-500/10 rounded-xl transition-all"
+                            title="Copy API Link"
+                          >
+                            {linkCopied === k.id ? <CheckCircle2 className="w-4 h-4 text-purple-400" /> : <Link2 className="w-4 h-4" />}
+                          </button>
+                        </div>
                       </div>
                     </td>
                     <td className="px-8 py-6">
@@ -108,18 +127,16 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
                       </span>
                     </td>
                     <td className="px-8 py-6 text-right">
-                      <div className="flex items-center justify-end space-x-3 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      <div className="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
                         <button 
                           onClick={() => handleToggle(k)} 
-                          title={k.isActive ? "Block License" : "Restore License"}
-                          className={`p-3 rounded-xl transition-all ${k.isActive ? 'text-slate-600 hover:text-orange-400 hover:bg-orange-500/10' : 'text-orange-400 bg-orange-500/10 border border-orange-500/20'}`}
+                          className={`p-3 rounded-xl transition-all ${k.isActive ? 'text-slate-600 hover:text-orange-400' : 'text-orange-400 bg-orange-500/10'}`}
                         >
                           <ShieldAlert className="w-5 h-5" />
                         </button>
                         <button 
                           onClick={() => handleDelete(k.id)} 
-                          title="Erase Forever"
-                          className="p-3 text-slate-600 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                          className="p-3 text-slate-600 hover:text-red-500"
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
@@ -128,18 +145,6 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
                   </tr>
                 );
               })}
-              {current.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="py-32 text-center">
-                    <div className="flex flex-col items-center justify-center space-y-6 opacity-20">
-                      <div className="w-20 h-20 rounded-full border-2 border-dashed border-slate-600 animate-spin duration-[10s] flex items-center justify-center">
-                         <XCircle className="w-10 h-10 text-slate-600" />
-                      </div>
-                      <p className="font-black uppercase text-xs tracking-[1em] ml-4 text-slate-400">Registry_Empty</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>
@@ -147,20 +152,18 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
         {total > 1 && (
           <div className="px-10 py-8 bg-slate-950/80 border-t border-white/5 flex items-center justify-between">
             <span className="text-[10px] text-slate-600 font-black uppercase tracking-[0.4em]">
-              Segment <span className="text-cyan-400">{page}</span> / <span className="text-slate-500">{total}</span>
+              Page <span className="text-cyan-400">{page}</span> / <span className="text-slate-500">{total}</span>
             </span>
             <div className="flex items-center space-x-4">
               <button 
-                disabled={page === 1}
-                onClick={() => setPage(p => p - 1)}
-                className="p-3 text-slate-500 hover:text-white disabled:opacity-20 transition-all bg-slate-900/60 rounded-xl border border-white/5 hover:border-cyan-500/20 shadow-lg"
+                disabled={page === 1} onClick={() => setPage(p => p - 1)}
+                className="p-3 text-slate-500 hover:text-white disabled:opacity-20 bg-slate-900/60 rounded-xl border border-white/5"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button 
-                disabled={page === total}
-                onClick={() => setPage(p => p + 1)}
-                className="p-3 text-slate-500 hover:text-white disabled:opacity-20 transition-all bg-slate-900/60 rounded-xl border border-white/5 hover:border-cyan-500/20 shadow-lg"
+                disabled={page === total} onClick={() => setPage(p => p + 1)}
+                className="p-3 text-slate-500 hover:text-white disabled:opacity-20 bg-slate-900/60 rounded-xl border border-white/5"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>

@@ -6,13 +6,14 @@ import { db } from '../firebase';
 import { LicenseKey, UserData } from '../types';
 import { KeyTable } from '../components/KeyTable';
 import { GenerateKeyModal } from '../components/GenerateKeyModal';
-import { Plus, Key, Activity, Shield, Crown, Clock, ShieldAlert, Zap, Loader2, Sparkles } from 'lucide-react';
+import { Plus, Key, Activity, Shield, Crown, Clock, ShieldAlert, Zap, Loader2, Sparkles, Link as LinkIcon, CheckCircle2 } from 'lucide-react';
 
 const Dashboard: React.FC<{ user: User; userData: UserData | null }> = ({ user, userData }) => {
   const [keys, setKeys] = useState<LicenseKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -34,6 +35,13 @@ const Dashboard: React.FC<{ user: User; userData: UserData | null }> = ({ user, 
 
     return () => unsubscribe();
   }, [user.uid]);
+
+  const copyBaseApi = () => {
+    const url = `${window.location.origin}/#/connect`;
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(null), 2000);
+  };
 
   const activeCount = keys.filter(k => k.isActive && (!k.expiresAt || Date.now() < k.expiresAt)).length;
   const canCreate = userData?.isAdmin || userData?.isVIP || (!userData?.trialUsed);
@@ -75,9 +83,13 @@ const Dashboard: React.FC<{ user: User; userData: UserData | null }> = ({ user, 
                    <div className={`w-2.5 h-2.5 rounded-full mr-4 animate-pulse ${userData?.isVIP ? 'bg-cyan-400' : 'bg-slate-500'}`}></div>
                   {userData?.isVIP ? 'VIP_LEVEL_ACCESS' : 'TRIAL_RESTRICTED'}
                 </div>
-                <span className="text-slate-600 text-[10px] font-mono tracking-widest bg-black/60 px-5 py-2.5 rounded-2xl border border-white/5">
-                  ID: {user.uid.slice(0, 12).toUpperCase()}
-                </span>
+                <button 
+                  onClick={copyBaseApi}
+                  className="group flex items-center space-x-3 text-slate-400 text-[10px] font-mono tracking-widest bg-black/60 px-5 py-2.5 rounded-2xl border border-white/5 hover:border-cyan-500/50 hover:text-cyan-400 transition-all"
+                >
+                  {copiedLink ? <CheckCircle2 className="w-3.5 h-3.5" /> : <LinkIcon className="w-3.5 h-3.5" />}
+                  <span>{copiedLink ? 'API_URL_COPIED' : 'COPY_CONNECT_API'}</span>
+                </button>
               </div>
             </div>
           </div>
