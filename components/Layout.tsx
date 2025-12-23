@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { User, signOut } from 'firebase/auth';
 import { auth } from '../firebase';
