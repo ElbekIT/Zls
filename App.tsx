@@ -18,28 +18,54 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        const docRef = doc(db, 'users', currentUser.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setUserData(docSnap.data() as UserData);
+      try {
+        setUser(currentUser);
+        if (currentUser) {
+          const docRef = doc(db, 'users', currentUser.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setUserData(docSnap.data() as UserData);
+          } else {
+            // User authenticated but no document in Firestore
+            setUserData(null);
+          }
+        } else {
+          setUserData(null);
         }
-      } else {
-        setUserData(null);
+      } catch (error) {
+        console.error("Auth state processing error:", error);
+        // Ensure loading turns off even on error
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
-          <p className="mt-4 text-cyan-400 font-medium animate-pulse tracking-widest uppercase text-xs">Synchronizing Encryption...</p>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center overflow-hidden">
+        <div className="relative">
+          <div className="absolute inset-0 bg-cyan-500 blur-[100px] opacity-10 animate-pulse"></div>
+          <div className="relative flex flex-col items-center">
+            <div className="w-16 h-16 border-4 border-slate-800 border-t-cyan-500 rounded-full animate-spin"></div>
+            <div className="mt-6 flex flex-col items-center space-y-2">
+               <p className="text-cyan-400 font-black tracking-[0.4em] uppercase text-[10px] animate-pulse">
+                 Synchronizing Encryption
+               </p>
+               <div className="h-0.5 w-32 bg-slate-900 rounded-full overflow-hidden">
+                 <div className="h-full bg-cyan-500 animate-[loading_2s_infinite]"></div>
+               </div>
+            </div>
+          </div>
         </div>
+        <style>{`
+          @keyframes loading {
+            0% { width: 0%; transform: translateX(-100%); }
+            50% { width: 100%; transform: translateX(0%); }
+            100% { width: 0%; transform: translateX(100%); }
+          }
+        `}</style>
       </div>
     );
   }

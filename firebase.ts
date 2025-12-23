@@ -2,12 +2,11 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCBFaexQ484TzYUE9AmyTx39mvhsLYL4lU",
   authDomain: "oganiy-mas.firebaseapp.com",
-  databaseURL: "https://oganiy-mas-default-rtdb.firebaseio.com",
   projectId: "oganiy-mas",
   storageBucket: "oganiy-mas.firebasestorage.app",
   messagingSenderId: "312627020192",
@@ -18,6 +17,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+
+// Safe Analytics Initialization
+export const analytics = null;
+isSupported().then(yes => {
+  if (yes) getAnalytics(app);
+});
 
 export default app;
