@@ -5,13 +5,14 @@ import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCBFaexQ484TzYUE9AmyTx39mvhsLYL4lU",
-  authDomain: "oganiy-mas.firebaseapp.com",
-  projectId: "oganiy-mas",
-  storageBucket: "oganiy-mas.firebasestorage.app",
-  messagingSenderId: "312627020192",
-  appId: "1:312627020192:web:58c298cdf05758130e24c5",
-  measurementId: "G-856YRJQ2LB"
+  apiKey: "AIzaSyAg6AmAE_q6owmPBuimuBKitVM1ne13FrA",
+  authDomain: "baby-igra.firebaseapp.com",
+  databaseURL: "https://baby-igra-default-rtdb.firebaseio.com",
+  projectId: "baby-igra",
+  storageBucket: "baby-igra.firebasestorage.app",
+  messagingSenderId: "767933435506",
+  appId: "1:767933435506:web:4454e86a5832667291fceb",
+  measurementId: "G-XDEXPXBYCL"
 };
 
 const app = initializeApp(firebaseConfig);
