@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Trash2, Copy, CheckCircle2, ShieldAlert, Search, ChevronLeft, ChevronRight, XCircle, Clock, Link2 } from 'lucide-react';
+import { Trash2, Copy, CheckCircle2, ShieldAlert, Search, ChevronLeft, ChevronRight, Clock, Link2 } from 'lucide-react';
 import { LicenseKey } from '../types';
 import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -27,7 +26,6 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
   };
 
   const handleCopyLink = (key: string, id: string) => {
-    // Clean URL without # for API
     const url = `${window.location.origin}/connect?key=${key}`;
     navigator.clipboard.writeText(url);
     setLinkCopied(id);
@@ -49,7 +47,7 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
   const getStatus = (k: LicenseKey) => {
     if (!k.isActive) return { l: 'BLOCKED', c: 'text-slate-500 bg-slate-900 border-slate-800' };
     if (k.expiresAt && Date.now() > k.expiresAt) return { l: 'EXPIRED', c: 'text-red-400 bg-red-500/5 border-red-500/10' };
-    return { l: 'ACTIVE', c: 'text-cyan-400 bg-cyan-500/5 border-cyan-500/10' };
+    return { l: 'ACTIVE', c: 'text-amber-500 bg-amber-500/5 border-amber-500/10' };
   };
 
   return (
@@ -58,19 +56,19 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
         <div className="flex items-center space-x-4">
            <div className="px-6 py-3 bg-slate-900/40 rounded-2xl border border-white/5 shadow-inner flex items-center space-x-3">
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active Keys:</span>
-              <span className="text-[12px] font-black text-cyan-400 font-mono">{filtered.length}</span>
+              <span className="text-[12px] font-black text-amber-500 font-mono">{filtered.length}</span>
            </div>
         </div>
         <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-cyan-400 transition-colors" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-amber-500 transition-colors" />
           <input 
             placeholder="Search Registry..." value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
-            className="bg-slate-950/50 border border-white/10 rounded-2xl pl-12 pr-6 py-4 text-xs text-white outline-none focus:border-cyan-500/40 w-full md:w-80 font-bold transition-all shadow-inner"
+            className="bg-slate-950/50 border border-white/10 rounded-2xl pl-12 pr-6 py-4 text-xs text-white outline-none focus:border-amber-500/40 w-full md:w-80 font-bold transition-all shadow-inner"
           />
         </div>
       </div>
 
-      <div className="cyber-card rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl bg-slate-950/40">
+      <div className="gold-card rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
@@ -86,7 +84,7 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
               {current.map(k => {
                 const s = getStatus(k);
                 return (
-                  <tr key={k.id} className="hover:bg-cyan-500/[0.02] transition-colors group">
+                  <tr key={k.id} className="hover:bg-amber-500/[0.02] transition-colors group">
                     <td className="px-8 py-6">
                       <div className="flex flex-col">
                         <span className="font-black italic uppercase text-sm text-slate-200 tracking-tight">{k.game}</span>
@@ -95,30 +93,30 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
                     </td>
                     <td className="px-8 py-6">
                       <div className="flex items-center space-x-3">
-                        <code className="bg-black/60 px-5 py-3 rounded-2xl border border-white/5 text-cyan-400 font-mono text-[11px] tracking-widest shadow-inner group-hover:border-cyan-500/30 transition-all">
+                        <code className="bg-black/60 px-5 py-3 rounded-2xl border border-white/5 text-amber-500 font-mono text-[11px] tracking-widest shadow-inner group-hover:border-amber-500/30 transition-all">
                           {k.keyString}
                         </code>
                         <div className="flex items-center space-x-1">
                           <button 
                             onClick={() => handleCopy(k.keyString, k.id)} 
-                            className="p-2.5 text-slate-600 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-xl transition-all"
+                            className="p-2.5 text-slate-600 hover:text-amber-500 hover:bg-amber-500/10 rounded-xl transition-all"
                             title="Copy Key"
                           >
                             {copied === k.id ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                           </button>
                           <button 
                             onClick={() => handleCopyLink(k.keyString, k.id)} 
-                            className="p-2.5 text-slate-600 hover:text-purple-400 hover:bg-purple-500/10 rounded-xl transition-all"
+                            className="p-2.5 text-slate-600 hover:text-amber-400 hover:bg-amber-500/10 rounded-xl transition-all"
                             title="Copy API Link"
                           >
-                            {linkCopied === k.id ? <CheckCircle2 className="w-4 h-4 text-purple-400" /> : <Link2 className="w-4 h-4" />}
+                            {linkCopied === k.id ? <CheckCircle2 className="w-4 h-4 text-amber-400" /> : <Link2 className="w-4 h-4" />}
                           </button>
                         </div>
                       </div>
                     </td>
                     <td className="px-8 py-6">
                       <div className="inline-flex items-center text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-900/60 px-4 py-2 rounded-xl border border-white/5">
-                        <Clock className="w-3.5 h-3.5 mr-2.5 text-purple-500" />
+                        <Clock className="w-3.5 h-3.5 mr-2.5 text-amber-500" />
                         {k.durationLabel}
                       </div>
                     </td>
@@ -153,7 +151,7 @@ export const KeyTable: React.FC<{ keys: LicenseKey[]; onRefresh: () => void }> =
         {total > 1 && (
           <div className="px-10 py-8 bg-slate-950/80 border-t border-white/5 flex items-center justify-between">
             <span className="text-[10px] text-slate-600 font-black uppercase tracking-[0.4em]">
-              Page <span className="text-cyan-400">{page}</span> / <span className="text-slate-500">{total}</span>
+              Page <span className="text-amber-500">{page}</span> / <span className="text-slate-500">{total}</span>
             </span>
             <div className="flex items-center space-x-4">
               <button 

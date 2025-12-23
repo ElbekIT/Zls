@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { Crown, Lock, User as UserIcon, Mail, Loader2, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Crown, Lock, User as UserIcon, Mail, Loader2, ArrowRight } from 'lucide-react';
 
 const USER_LIMIT = 5;
 
@@ -97,7 +96,7 @@ const Login: React.FC = () => {
           <h1 className="text-6xl font-black text-white italic tracking-tighter uppercase leading-none">
             ELBEK<span className="text-amber-500">PANEL</span>
           </h1>
-          <p className="text-slate-600 text-[9px] font-black uppercase tracking-[1em] opacity-40">Elite Management System</p>
+          <p className="text-slate-600 text-[9px] font-black uppercase tracking-[1em] opacity-40">Prestige Management System</p>
         </div>
 
         <div className="gold-card rounded-[3rem] border border-white/5 overflow-hidden">
