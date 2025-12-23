@@ -1,140 +1,155 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from 'firebase/auth';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { LicenseKey, UserData } from '../types';
 import { KeyTable } from '../components/KeyTable';
 import { GenerateKeyModal } from '../components/GenerateKeyModal';
-// Added Loader2 to the lucide-react imports
-import { Plus, Key, Activity, Shield, Crown, Clock, Zap, RefreshCcw, Loader2 } from 'lucide-react';
+import { Plus, Key, Activity, Shield, Crown, Clock, ShieldAlert, Zap, Loader2, Sparkles } from 'lucide-react';
 
 const Dashboard: React.FC<{ user: User; userData: UserData | null }> = ({ user, userData }) => {
   const [keys, setKeys] = useState<LicenseKey[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const fetchKeys = useCallback(async () => {
+  useEffect(() => {
     setLoading(true);
-    try {
-      const q = query(collection(db, 'keys'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
+    const q = query(
+      collection(db, 'keys'), 
+      where('userId', '==', user.uid), 
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, (snap) => {
       const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as LicenseKey[];
       setKeys(data);
-    } catch (e) { 
-      console.error("Dashboard key fetch error:", e); 
-    } finally { 
-      setLoading(false); 
-    }
+      setLoading(false);
+      setSyncing(false);
+    }, (err) => {
+      console.error("Critical Sync Error:", err);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, [user.uid]);
 
-  useEffect(() => { fetchKeys(); }, [fetchKeys]);
-
   const activeCount = keys.filter(k => k.isActive && (!k.expiresAt || Date.now() < k.expiresAt)).length;
-  const canCreate = userData?.isAdmin || userData?.isVIP || (!userData?.trialUsed && keys.length === 0);
+  const canCreate = userData?.isAdmin || userData?.isVIP || (!userData?.trialUsed);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+    <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 pb-20">
       
-      {/* Header Panel */}
-      <div className="glass-card rounded-[3rem] p-10 md:p-14 relative overflow-hidden group border-cyan-500/10 hover:border-cyan-500/20 transition-all duration-700">
-        <div className="absolute top-[-30%] right-[-10%] opacity-[0.03] group-hover:opacity-[0.06] transition-opacity pointer-events-none">
-          <Shield className="w-96 h-96 text-cyan-400 rotate-12" />
+      {/* Profile HUD */}
+      <div className="cyber-card rounded-[3.5rem] p-12 md:p-16 relative overflow-hidden group border-cyan-500/20">
+        <div className="absolute top-[-20%] right-[-5%] opacity-[0.03] group-hover:opacity-[0.1] transition-all duration-1000 pointer-events-none">
+          <Shield className="w-[600px] h-[600px] text-cyan-400 rotate-12" />
         </div>
         
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12 relative z-10">
-          <div className="flex items-center space-x-8">
-            <div className="relative group/avatar">
-              <div className="absolute inset-0 bg-cyan-500 blur-3xl opacity-20 group-hover/avatar:opacity-40 transition-opacity rounded-full"></div>
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-16 relative z-10">
+          <div className="flex items-center space-x-12">
+            <div className="relative">
+              <div className="absolute inset-0 bg-cyan-500 blur-[80px] opacity-25 animate-pulse"></div>
               <img 
-                src={`https://ui-avatars.com/api/?name=${userData?.username || 'User'}&background=06B6D4&color=fff&bold=true&size=160`} 
-                className="w-24 h-24 rounded-[2rem] border-2 border-white/10 relative z-10 shadow-2xl" 
-                alt="Profile" 
+                src={`https://ui-avatars.com/api/?name=${userData?.username || 'U'}&background=06B6D4&color=fff&bold=true&size=256`} 
+                className="w-36 h-36 rounded-[3rem] border-4 border-white/5 relative z-10 shadow-2xl transition-transform group-hover:scale-105 duration-700" 
+                alt="Identity" 
               />
               {userData?.isVIP && (
-                <div className="absolute -top-3 -right-3 bg-gradient-to-br from-yellow-400 to-orange-600 p-2.5 rounded-2xl shadow-xl z-20 animate-bounce shadow-orange-950/40">
-                  <Crown className="w-5 h-5 text-black" />
+                <div className="absolute -top-5 -right-5 bg-gradient-to-br from-yellow-400 to-orange-600 p-4 rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.4)] z-20 animate-bounce">
+                  <Crown className="w-7 h-7 text-black" />
                 </div>
               )}
             </div>
             
-            <div className="space-y-2">
-              <div className="flex items-center space-x-3">
-                <h1 className="text-5xl font-black text-white italic tracking-tighter uppercase neon-text">
-                  {userData?.username || 'Agent'}
+            <div className="space-y-5">
+              <div className="flex items-center space-x-4">
+                <h1 className="text-7xl font-black text-white italic tracking-tighter uppercase leading-none neon-glow">
+                  {userData?.username || 'GUEST_NODE'}
                 </h1>
+                {userData?.isVIP && <Sparkles className="w-8 h-8 text-yellow-500 animate-pulse" />}
               </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] border transition-all ${userData?.isVIP ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30' : 'bg-slate-800/50 text-slate-500 border-slate-700'}`}>
-                  {userData?.isVIP ? 'VIP STATUS: ACTIVE' : 'ACCESS: TRIAL'}
-                </span>
-                <span className="text-slate-600 text-[10px] font-black uppercase tracking-widest opacity-60">
-                  NODE: {user.uid.slice(0, 12).toUpperCase()}
+              <div className="flex flex-wrap items-center gap-5">
+                <div className={`px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.4em] border flex items-center ${userData?.isVIP ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.1)]' : 'bg-slate-800/50 text-slate-500 border-slate-700'}`}>
+                   <div className={`w-2.5 h-2.5 rounded-full mr-4 animate-pulse ${userData?.isVIP ? 'bg-cyan-400' : 'bg-slate-500'}`}></div>
+                  {userData?.isVIP ? 'VIP_LEVEL_ACCESS' : 'TRIAL_RESTRICTED'}
+                </div>
+                <span className="text-slate-600 text-[10px] font-mono tracking-widest bg-black/60 px-5 py-2.5 rounded-2xl border border-white/5">
+                  ID: {user.uid.slice(0, 12).toUpperCase()}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
-             <button 
-               onClick={fetchKeys}
-               className="p-4 rounded-2xl bg-slate-900 border border-white/5 text-slate-500 hover:text-cyan-400 transition-all active:rotate-180"
-             >
-               <RefreshCcw className="w-5 h-5" />
-             </button>
+          <div className="flex flex-col items-end gap-6">
+             {userData?.trialUsed && !userData?.isVIP && !userData?.isAdmin && (
+               <div className="flex items-center space-x-3 px-8 py-4 bg-red-500/10 border border-red-500/20 rounded-2xl animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.1)]">
+                  <ShieldAlert className="w-5 h-5 text-red-500" />
+                  <span className="text-[11px] font-black text-red-400 uppercase tracking-widest">TRIAL EXHAUSTED: Upgrade Required</span>
+               </div>
+             )}
              <button 
                 disabled={!canCreate || loading}
                 onClick={() => setIsModalOpen(true)}
-                className={`group px-10 py-5 btn-primary text-white font-black rounded-2xl transition-all active:scale-95 disabled:opacity-20 disabled:grayscale uppercase tracking-widest text-xs flex items-center italic ${!canCreate ? 'cursor-not-allowed' : ''}`}
+                className={`group px-14 py-7 btn-elite text-white font-black rounded-2xl transition-all active:scale-95 disabled:opacity-20 uppercase tracking-[0.4em] text-[12px] flex items-center italic ${!canCreate ? 'cursor-not-allowed grayscale' : ''}`}
               >
-                <Plus className="w-5 h-5 mr-3 group-hover:rotate-90 transition-transform" />
-                {canCreate ? 'Initialize New Key' : 'Limit Restricted'}
+                <Plus className="w-6 h-6 mr-5 group-hover:rotate-90 transition-transform" />
+                {canCreate ? 'DEPLOY_LICENSE' : 'QUOTA_LOCKED'}
               </button>
           </div>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* Intelligence Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
         {[
-          { label: 'Total Deployments', value: keys.length, icon: Key, color: 'text-cyan-400', bg: 'bg-cyan-500/5' },
-          { label: 'Live Sessions', value: activeCount, icon: Activity, color: 'text-emerald-400', bg: 'bg-emerald-500/5' },
-          { label: 'Time Protocol', value: userData?.isVIP ? 'PERMANENT' : '60M SESSION', icon: Clock, color: 'text-purple-400', bg: 'bg-purple-500/5' }
+          { label: 'Registered Keys', value: keys.length, icon: Key, color: 'text-cyan-400', bg: 'bg-cyan-500/5', shadow: 'shadow-cyan-500/5' },
+          { label: 'Active Signals', value: activeCount, icon: Activity, color: 'text-emerald-400', bg: 'bg-emerald-500/5', shadow: 'shadow-emerald-500/5' },
+          { label: 'Access Protocol', value: (userData?.isVIP || userData?.isAdmin) ? 'UNLIMITED' : '1H_TRIAL', icon: Clock, color: 'text-purple-400', bg: 'bg-purple-500/5', shadow: 'shadow-purple-500/5' }
         ].map((s, i) => (
-          <div key={i} className={`glass-card p-10 rounded-[2.5rem] border border-white/5 group hover:border-cyan-500/30 transition-all duration-500 ${s.bg}`}>
-            <div className={`p-4 rounded-2xl bg-slate-950 border border-white/5 w-fit mb-8 ${s.color} group-hover:scale-110 transition-transform`}>
-              <s.icon className="w-7 h-7" />
+          <div key={i} className={`cyber-card p-14 rounded-[3.5rem] border border-white/5 group hover:border-cyan-500/40 transition-all duration-700 ${s.bg} ${s.shadow}`}>
+            <div className={`p-6 rounded-2xl bg-black/60 border border-white/10 w-fit mb-12 ${s.color} group-hover:scale-110 group-hover:rotate-12 transition-all shadow-xl`}>
+              <s.icon className="w-10 h-10" />
             </div>
-            <p className="text-slate-500 text-[11px] font-black uppercase tracking-[0.3em]">{s.label}</p>
-            <h3 className="text-5xl font-black mt-2 text-white italic tracking-tighter">{s.value}</h3>
+            <p className="text-slate-500 text-[13px] font-black uppercase tracking-[0.5em] mb-5">{s.label}</p>
+            <h3 className="text-7xl font-black text-white italic tracking-tighter">{s.value}</h3>
           </div>
         ))}
       </div>
 
-      {/* Table Section */}
-      <div className="space-y-8 pb-20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-1.5 h-10 bg-cyan-600 rounded-full shadow-[0_0_15px_rgba(8,145,178,0.6)]"></div>
-            <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">Encrypted Registry</h2>
+      {/* Registry Section */}
+      <div className="space-y-12">
+        <div className="flex items-center justify-between px-6">
+          <div className="flex items-center space-x-6">
+            <div className="w-2.5 h-14 bg-cyan-600 rounded-full shadow-[0_0_30px_rgba(6,182,212,1)] animate-neon"></div>
+            <h2 className="text-4xl font-black text-white uppercase italic tracking-tighter">Encrypted Registry</h2>
           </div>
-          <div className="hidden md:block h-px flex-1 mx-10 bg-gradient-to-r from-cyan-900/40 to-transparent"></div>
+          {syncing && (
+            <div className="flex items-center space-x-4 text-cyan-400 font-black text-[11px] uppercase tracking-widest animate-pulse">
+               <Loader2 className="w-5 h-5 animate-spin" />
+               <span>Syncing Mainframe...</span>
+            </div>
+          )}
         </div>
         
-        {loading && keys.length === 0 ? (
-          <div className="py-20 flex flex-col items-center justify-center space-y-4 opacity-50">
-             <Loader2 className="w-10 h-10 animate-spin text-cyan-500" />
-             <p className="text-[10px] font-black uppercase tracking-widest text-cyan-400">Synchronizing Data...</p>
+        {loading ? (
+          <div className="py-40 flex flex-col items-center justify-center space-y-8 opacity-50">
+             <div className="relative w-20 h-20">
+                <div className="absolute inset-0 border-t-2 border-cyan-500 rounded-full animate-spin"></div>
+                <div className="absolute inset-2 border-t-2 border-purple-500 rounded-full animate-spin duration-700"></div>
+             </div>
+             <p className="text-[14px] font-black uppercase tracking-[0.7em] text-cyan-400 animate-pulse">Accessing Data Nodes...</p>
           </div>
         ) : (
-          <KeyTable keys={keys} onRefresh={fetchKeys} />
+          <KeyTable keys={keys} onRefresh={() => {}} />
         )}
       </div>
 
       {isModalOpen && (
         <GenerateKeyModal 
           userId={user.uid} userData={userData} 
-          onClose={() => setIsModalOpen(false)} onSuccess={fetchKeys} 
+          onClose={() => setIsModalOpen(false)} onSuccess={() => {}} 
         />
       )}
     </div>

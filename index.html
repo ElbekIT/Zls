@@ -4,61 +4,65 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VENOM KEY - PRO INTERFACE</title>
+    <title>VENOM KEY | ELITE PANEL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
       :root {
         --v-cyan: #06b6d4;
-        --v-purple: #8b5cf6;
-        --v-bg: #020617;
+        --v-bg: #010409;
       }
       body {
         font-family: 'Space Grotesk', sans-serif;
         background-color: var(--v-bg);
         color: #f8fafc;
-        user-select: none;
-        -webkit-user-select: none;
         overflow-x: hidden;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
       }
-      .glass-card {
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(25px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
-      }
-      .neon-text {
-        text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
-      }
-      .neon-border {
-        border-color: rgba(6, 182, 212, 0.3);
-        box-shadow: inset 0 0 15px rgba(6, 182, 212, 0.05);
-      }
-      .btn-primary {
-        background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
-        box-shadow: 0 10px 25px -5px rgba(8, 145, 178, 0.4);
-      }
-      .btn-primary:hover {
-        box-shadow: 0 15px 30px -5px rgba(8, 145, 178, 0.6);
-        transform: translateY(-2px);
-      }
-      @keyframes scanline {
-        0% { transform: translateY(-100%); }
-        100% { transform: translateY(100%); }
-      }
-      .scanline {
-        width: 100%;
-        height: 100px;
-        z-index: 100;
-        background: linear-gradient(0deg, transparent 0%, rgba(6, 182, 212, 0.05) 50%, transparent 100%);
-        position: absolute;
-        top: 0;
-        left: 0;
+      /* CRT Screen Effect */
+      body::before {
+        content: " ";
+        display: block;
+        position: fixed;
+        top: 0; left: 0; bottom: 0; right: 0;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.04));
+        z-index: 9999;
+        background-size: 100% 3px, 3px 100%;
         pointer-events: none;
-        animation: scanline 8s linear infinite;
       }
-      ::-webkit-scrollbar { width: 4px; }
-      ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+      .cyber-card {
+        background: rgba(13, 17, 23, 0.85);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(6, 182, 212, 0.15);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .neon-glow {
+        filter: drop-shadow(0 0 12px rgba(6, 182, 212, 0.5));
+      }
+      .btn-elite {
+        background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+        box-shadow: 0 0 25px rgba(6, 182, 212, 0.25);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+      .btn-elite:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 35px rgba(6, 182, 212, 0.4);
+      }
+      .btn-elite:active {
+        transform: translateY(0) scale(0.97);
+      }
+      ::-webkit-scrollbar { width: 3px; }
+      ::-webkit-scrollbar-thumb { background: #06b6d4; border-radius: 10px; }
+      
+      @keyframes neon-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+      .animate-neon { animation: neon-pulse 2s infinite ease-in-out; }
     </style>
     <script type="importmap">
     {
@@ -75,7 +79,6 @@
   <link rel="stylesheet" href="/index.css">
 </head>
   <body>
-    <div class="scanline"></div>
     <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
